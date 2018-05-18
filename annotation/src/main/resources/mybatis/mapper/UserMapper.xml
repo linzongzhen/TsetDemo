@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.springboot.annotation.demo.dao.UserMapper" >
+    <resultMap id="BaseResultMap" type="com.springboot.annotation.demo.entity.User" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="password" property="password" jdbcType="VARCHAR" />
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+    <sql id="Base_Column_List" >
+        id, name, password, phone
+    </sql>
+
+    <select id="listUsersInfo" resultMap="BaseResultMap"  >
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM t_user
+    </select>
+
+    <select id="getUser" parameterType="java.lang.Integer" resultMap="BaseResultMap" >
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM t_user
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insertUser" parameterType="com.springboot.annotation.demo.entity.User" >
+        /* 生成UUID 赋值给id*/
+        <selectKey  keyProperty="id" resultType="java.lang.String" order="BEFORE">
+            select  replace(uuid(),'-','')
+        </selectKey>
+
+        INSERT INTO
+        t_user
+        (id,name,password,phone)
+        VALUES
+        (#{id},#{name}, #{password}, #{phone})
+    </insert>
+
+    <update id="updateUser" parameterType="com.springboot.annotation.demo.entity.User" >
+        UPDATE
+        t_user
+        SET
+        <if test="name != null">name = #{name},</if>
+        <if test="password != null">password = #{password},</if>
+        phone = #{phone}
+        WHERE
+        id = #{id}
+    </update>
+
+    <delete id="deleteUser" parameterType="java.lang.Integer" >
+        DELETE FROM
+        t_user
+        WHERE
+        id =#{id}
+    </delete>
+
+    <insert id="insertUserList" parameterType="java.util.List" >
+
+        insert into t_user
+        (
+            <include refid="Base_Column_List" />
+        )
+        values
+        <foreach collection="list" item="item" index= "index" separator =",">
+            (
+                (SELECT REPLACE(UUID(), '-', '')),
+                #{item.name},
+                #{item.password},
+                #{item.phone}
+            )
+        </foreach>
+
+    </insert>
+
+</mapper>
